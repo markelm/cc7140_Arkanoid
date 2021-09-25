@@ -1,0 +1,27 @@
+﻿  Game.cpp
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.h(103,63): warning C4244: 'inicializando': conversão de 'int' para 'float', possível perda de dados
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.h(103,86): warning C4244: 'inicializando': conversão de 'int' para 'float', possível perda de dados
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.cpp(261,15): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.cpp(262,15): warning C4244: 'inicializando': conversão de 'double' para 'float', possível perda de dados
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.cpp(501,10): warning C4838: a conversão de 'const float' em 'int' requer uma conversão de restrição
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.cpp(501,10): warning C4244: 'inicializando': conversão de 'const float' para 'int', possível perda de dados
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.cpp(502,10): warning C4838: a conversão de 'const float' em 'int' requer uma conversão de restrição
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.cpp(502,10): warning C4244: 'inicializando': conversão de 'const float' para 'int', possível perda de dados
+  Main.cpp
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.h(103,63): warning C4244: 'inicializando': conversão de 'int' para 'float', possível perda de dados
+C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Game.h(103,86): warning C4244: 'inicializando': conversão de 'int' para 'float', possível perda de dados
+  Gerando Código...
+  Game.vcxproj -> C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\Debug\Game.exe
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\libfreetype-6.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\libogg-0.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\libpng16-16.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\libvorbis-0.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\libvorbisfile-3.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\SDL2.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\SDL2_image.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\SDL2_mixer.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\SDL2_ttf.dll
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\SDL\lib\win\x86\zlib1.dll
+  10 arquivo(s) copiado(s)
+  C:\Users\CTC\OneDrive - Connectcom Teleinformatica\Área de Trabalho\mk_code\pong\\external\GLEW\lib\win\x86\glew32.dll
+  1 arquivo(s) copiado(s)
