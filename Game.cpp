@@ -11,7 +11,10 @@
 #include <cstdio>
 #include <cstdarg>
 
-#define BUFFER_LENGTH 1024;
+#define BUFFER_LENGTH 1024
+
+#define SCREEN_HEIGHT 480
+#define SCREEN_WIDTH 640
 
 const int min_taps = 3;
 
@@ -56,8 +59,8 @@ bool Game::Initialize()
 		"Game Programming in C++ (Chapter 1)", // Window title
 		100,	// Top left x-coordinate of window
 		100,	// Top left y-coordinate of window
-		1024,	// Width of window
-		768,	// Height of window
+		SCREEN_WIDTH,	// Width of window
+		SCREEN_HEIGHT,	// Height of window
 		0		// Flags (0 for no flags set)
 	);
 
@@ -84,28 +87,29 @@ bool Game::Initialize()
 
 	vPaddle = std::vector<Paddle>();
 	vPaddle.push_back(
-		Paddle(10.0f, 
-			768.0f / 2.0f, 
-			300.0f, 
+		Paddle(SCREEN_WIDTH/2.0f, 
+			SCREEN_HEIGHT - 2*thickness, 
 			100.0f, 
-			SDL_SCANCODE_W, 
-			SDL_SCANCODE_S)
+			thickness,
+			300.0f,
+			SDL_SCANCODE_A, 
+			SDL_SCANCODE_D)
 	);
-	vPaddle.push_back(
-		Paddle(1024.0f - (10.0f + thickness), 
-			768.0f / 2.0f, 
-			300.0f, 
-			100.0f, 
-			SDL_SCANCODE_I, 
-			SDL_SCANCODE_K, 
-			false)
-	);
+	//vPaddle.push_back(
+	//	Paddle(SCREEN_WIDTH - (10.0f + thickness), 
+	//		SCREEN_HEIGHT / 2.0f, 
+	//		300.0f, 
+	//		100.0f, 
+	//		SDL_SCANCODE_I, 
+	//		SDL_SCANCODE_K, 
+	//		false)
+	//);
 	
 	vBall = std::list<Ball>();
 
 	vBall.push_back(
-		Ball(1024.0f / 2.0f,
-			768.0f / 2.0f,
+		Ball(SCREEN_WIDTH / 2.0f,
+			SCREEN_HEIGHT / 2.0f,
 			-200.0f,
 			235.0f, thickness, thickness)
 	);
@@ -126,7 +130,7 @@ bool Game::Initialize()
 	//	b.vel.y = ;
 	//}
 
-	map = BlockMap(1024.0 / 2.0, 768.0, 5, 7);
+	map = BlockMap(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT, 5, 7);
 
 
 	int i = 0;
@@ -190,13 +194,13 @@ void Game::ProcessInput()
 	for(auto& paddle:vPaddle){
 		bool was_shown = paddle.onScreen;
 		paddle.dir = 0;
-		if (state[paddle.up])
+		if (state[paddle.left])
 		{
 			paddle.dir -= 1;
 			paddle.onScreen = true;
 			if (!was_shown) goals = { 0, 0 };
 		}
-		if (state[paddle.down])
+		if (state[paddle.right])
 		{
 			paddle.dir += 1;
 			paddle.onScreen = true;
@@ -234,19 +238,19 @@ void Game::UpdateGame()
 		if (paddle.dir != 0)
 		{
 			// velocidade de 300 pixels por segundo
-			paddle.pos.y += paddle.dir * paddle.vel * deltaTime;
+			paddle.pos.x += paddle.dir * paddle.vel * deltaTime;
 			// verifique que a raquete n�o se move para fora da tela
 			// usamos "thickness", 
 			// que definimos como a altura dos elementos
 
-			if (paddle.pos.y < (paddle.height / 2.0f + thickness))
+			if (paddle.pos.x < (paddle.width / 2.0f + thickness))
 			{
-				paddle.pos.y = paddle.height / 2.0f + thickness;
+				paddle.pos.x = paddle.width / 2.0f + thickness;
 			}
 			else if (
-				paddle.pos.y > (768.0f - paddle.height / 2.0f - thickness))
+				paddle.pos.x > (SCREEN_WIDTH - paddle.width*3.0f/2.0f - thickness))
 			{
-				paddle.pos.y = 768.0f - paddle.height / 2.0f - thickness;
+				paddle.pos.x = SCREEN_WIDTH - paddle.width*3.0f/2.0f - thickness;
 			}
 		}
 	}
@@ -274,7 +278,7 @@ void Game::UpdateGame()
 
 		// atualiza a posição da bola se ela colidiu com a raquete
 		for(auto const& paddle : vPaddle) {
-			bool left_p = paddle.pos.x < 1024.0f / 2.0f;
+			bool left_p = paddle.pos.x < SCREEN_WIDTH / 2.0f;
 
 			float p_top = paddle.pos.y;
 			float p_bottom = paddle.pos.y + paddle.height;
@@ -301,31 +305,33 @@ void Game::UpdateGame()
 			}
 			//Verifica se a bola saiu da tela (no lado esquerdo, onde � permitido)
 		//Se sim, encerra o jogo
-			else if (b_left <= 0.0f)
+			else if (b_left <= thickness
+				&& b.vel.x < 0.0f)
 			{
-				// marcada para dele��o
-				b.onScreen = false;
-				goals[0] += 1;
+			// Atualize (negative) a velocidade da bola se ela 
+			// colidir com a parede da esquerda
+				b.vel.x *= -1.0f;
+
+				taps++;
+				if (taps > min_taps && vBall.size() < max_balls) {
+					vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
+					taps = 0;
+				}
+				
 			}
 			// Atualize (negative) a velocidade da bola se ela 
 			// colidir com a parede da direita
-			else if (b_right >= 1024.0f
+			else if (b_right >= SCREEN_WIDTH
 				&& b.vel.x > 0.0f)
 			{
-				if (vPaddle[1].onScreen) {
-					// marcada para dele��o
-					b.onScreen = false;
-					goals[1] += 1;
-				}
-				else {
-					b.vel.x *= -1.0f;
+				
+				b.vel.x *= -1.0f;
 
-					taps++;
-					if (taps > min_taps && vBall.size() < max_balls) {
-						vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
-						taps = 0;
-					}
-				}
+				taps++;
+				if (taps > min_taps && vBall.size() < max_balls) {
+					vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
+					taps = 0;
+				}				
 			}
 		}
 
@@ -343,7 +349,7 @@ void Game::UpdateGame()
 		}
 		// Atualize (negative) a velocidade da bola se ela 
 		// colidir com a parede de baixo
-		else if (b_bottom >= 768.0f
+		else if (b_bottom >= SCREEN_HEIGHT
 			&& b.vel.y > 0.0f)
 		{
 			b.vel.y *= -1.0f;
@@ -373,12 +379,12 @@ void Game::UpdateGame()
 }
 
 void Game::DrawText(const char* fmt, ...) {
-	char buffer[1024];
+	char buffer[BUFFER_LENGTH];
 
 	va_list rest;
 	va_start(rest, fmt);
 
-	SDL_vsnprintf(buffer, 1024, fmt, rest);
+	SDL_vsnprintf(buffer, BUFFER_LENGTH, fmt, rest);
 
 	va_end(rest);
 
@@ -426,7 +432,7 @@ void Game::GenerateOutput()
 	SDL_Rect wall{
 		0,        // top left x
 		0,        // top left y
-		1024,     // width
+		SCREEN_WIDTH,     // width
 		thickness // height
 	};
 	SDL_RenderFillRect(mRenderer, &wall);
@@ -434,17 +440,18 @@ void Game::GenerateOutput()
 	// desenhamos as outras paredes apenas mudando as 
 	// coordenadas de wall
 	// parede de baixo
-	wall.y = 768 - thickness;
+	/*wall.y = SCREEN_HEIGHT - thickness;
+	SDL_RenderFillRect(mRenderer, &wall);*/
+
+	//Parede da direita
+	wall.x = SCREEN_WIDTH - thickness;
+	wall.y = 0;
+	wall.w = thickness;
+	wall.h = SCREEN_WIDTH;
 	SDL_RenderFillRect(mRenderer, &wall);
 
-	// parede da direita
-	if (!vPaddle[1].onScreen) {
-		wall.x = 1024 - thickness;
-		wall.y = 0;
-		wall.w = thickness;
-		wall.h = 1024;
-		SDL_RenderFillRect(mRenderer, &wall);
-	}
+	wall.x = 0;
+	SDL_RenderFillRect(mRenderer, &wall);
 	
 	// como as posi��es da raquete e da bola ser�o atualizadas 
 	// a cada itera��o do game loop, criamos "membros" na classe
@@ -463,8 +470,8 @@ void Game::GenerateOutput()
 				// static_cast converte de float para inteiros, 
 				// pois SDL_Rect trabalha com inteiros
 				static_cast<int>(paddle.pos.x),
-				static_cast<int>(paddle.pos.y - paddle.height / 2),
-				thickness,
+				static_cast<int>(paddle.pos.y),
+				static_cast<int>(paddle.width),
 				static_cast<int>(paddle.height)
 			};
 			SDL_RenderFillRect(mRenderer, &rPaddle);
@@ -509,11 +516,9 @@ void Game::GenerateOutput()
 	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
 
 	printf("gols sofridos:");
-	if (vPaddle[1].onScreen) printf("\nesq: %3d\ndir : % 3d\n", goals[0], goals[1]);
-	else printf(" %3d\n", goals[0]);
+	printf(" %3d\n", goals[0]);
 
-	if (vPaddle[1].onScreen) DrawText("\n\nGols sofridos:\nesq: %3d\ndir : %3d\n", goals[0], goals[1]);
-	else DrawText("\n\nGols sofridos: %3d\n", goals[0]);
+	DrawText("\n\nGols sofridos: %3d\n", goals[0]);
 
 	SDL_SetRenderDrawColor(mRenderer, 255, 0, 0, 255);
 	

@@ -51,15 +51,16 @@ public:
 	Vector2 pos;
 	int dir;
 	float vel;
+	float width;
 	float height;
-	SDL_Scancode up;
-	SDL_Scancode down;
+	SDL_Scancode left;
+	SDL_Scancode right;
 //	int goals_taken;
 
 	bool onScreen; 
 
-	Paddle(float x, float y, float v, float h, SDL_Scancode u, SDL_Scancode d, bool show = true)
-		:pos({x, y}), vel(v), height(h), dir(0), up(u), down(d), onScreen(show)
+	Paddle(float x, float y, float w, float h, float v, SDL_Scancode l, SDL_Scancode r, bool show = true)
+		:pos({x, y}), vel(v), width(w), height(h), dir(0), left(l), right(r), onScreen(show)
 	{
 		//constructor
 	}
