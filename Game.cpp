@@ -18,7 +18,7 @@
 
 const int min_taps = 3;
 
-const int max_balls = 15;
+const int max_balls = 3;
 
 //sera usado para setar a altura de alguns objetos
 const int thickness = 15;
@@ -95,18 +95,8 @@ bool Game::Initialize()
 			SDL_SCANCODE_A, 
 			SDL_SCANCODE_D)
 	);
-	//vPaddle.push_back(
-	//	Paddle(SCREEN_WIDTH - (10.0f + thickness), 
-	//		SCREEN_HEIGHT / 2.0f, 
-	//		300.0f, 
-	//		100.0f, 
-	//		SDL_SCANCODE_I, 
-	//		SDL_SCANCODE_K, 
-	//		false)
-	//);
 	
 	vBall = std::list<Ball>();
-
 	vBall.push_back(
 		Ball(SCREEN_WIDTH / 2.0f,
 			SCREEN_HEIGHT / 2.0f,
@@ -114,24 +104,11 @@ bool Game::Initialize()
 			235.0f, thickness, thickness)
 	);
 
-	taps = 0;
-
-	//goals_left = 0;
+	//taps = 0;
 
 	goals = std::vector<int>((size_t)2);
 
-	//for (Ball &b : vBall)
-	//{
-	//	// posição inicial da bola
-	//	b.pos.x = ;
-	//	b.pos.y = ;
-	//	// velocidade inicial da bola
-	//	b.vel.x = ;
-	//	b.vel.y = ;
-	//}
-
 	map = BlockMap(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT, 5, 7);
-
 
 	int i = 0;
 	for (auto row : map.matrix) {
@@ -265,7 +242,7 @@ void Game::UpdateGame()
 		float var_x = dis(gen);
 		float var_y = dis(gen);
 
-		printf("var x: %.2f, var y: %.2f\n", var_x, var_y);
+		//printf("var x: %.2f, var y: %.2f\n", var_x, var_y);
 
 		b.pos.x += b.vel.x * deltaTime;
 		b.pos.y += b.vel.y * deltaTime;
@@ -278,86 +255,144 @@ void Game::UpdateGame()
 
 		// atualiza a posição da bola se ela colidiu com a raquete
 		for(auto const& paddle : vPaddle) {
-			bool left_p = paddle.pos.x < SCREEN_WIDTH / 2.0f;
-
-			float p_top = paddle.pos.y;
-			float p_bottom = paddle.pos.y + paddle.height;
-
-			float p_left = paddle.pos.x;
-			float p_right = paddle.pos.x + thickness;
-
-			if( paddle.onScreen &&
+			if (paddle.onScreen &&
 				// bolinha dentro do espaço da raquete
-				(b_bottom >= p_top && b_top <= p_bottom)
-				&& (b_left <= p_right && b_right >= p_left)
-				// e bolinha ainda vai em direção à raquete
-				&& ( (left_p && (b_left <= p_right && b.vel.x < 0.0f))
-					|| (!left_p && (b_right >= p_left && b.vel.x > 0.0f)) )
-			)
+				b.collide(paddle.pos, paddle.width, paddle.height)
+				&& b.vel.y > 0.0f)
 			{
-				b.vel.x *= -1.0f;
+				//printf("colidiu\n");
+				b.taps += 1;
+
+				b.vel.y *= -1.0f;
 
 				// acelera a cada colis�o
 				// depois adicionar condi��o de apertar barra de espa�o
+				// sem deltaTime, porque colisão não ocorre em todo frame
 				b.vel.x += get_sign(b.vel.x) * b.acc.x;
-				printf("vel_x: %.2f\n", b.vel.x);
-				//b.vel.y += b.accel.y * deltaTime;*/
-			}
-			//Verifica se a bola saiu da tela (no lado esquerdo, onde � permitido)
-		//Se sim, encerra o jogo
-			else if (b_left <= thickness
-				&& b.vel.x < 0.0f)
-			{
-			// Atualize (negative) a velocidade da bola se ela 
-			// colidir com a parede da esquerda
-				b.vel.x *= -1.0f;
+				b.vel.y += get_sign(b.vel.y) * b.acc.y;
+				
+				//printf("vel_x: %.2f\n", b.vel.x);
+				if (b.taps > min_taps && vBall.size() < max_balls) {
+					b.taps = 0;
 
-				taps++;
-				if (taps > min_taps && vBall.size() < max_balls) {
-					vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
-					taps = 0;
+					vBall.push_back(Ball(b.pos.x, b.pos.y, -b.vel.x + var_x, b.vel.y + var_y, thickness, thickness));
 				}
-				
-			}
-			// Atualize (negative) a velocidade da bola se ela 
-			// colidir com a parede da direita
-			else if (b_right >= SCREEN_WIDTH
-				&& b.vel.x > 0.0f)
-			{
-				
-				b.vel.x *= -1.0f;
-
-				taps++;
-				if (taps > min_taps && vBall.size() < max_balls) {
-					vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
-					taps = 0;
-				}				
 			}
 		}
 
-		// Atualize (negative) a velocidade da bola se ela 
-		// colidir com a parede de cima
-		if (b_top <= 0.0f && b.vel.y < 0.0f)
+		// atualiza a posição da bola se ela colidiu com algum bloco
+		for (auto& block : vBlock) {
+			if (block.onScreen &&
+				// bolinha dentro do espaço do bloco
+				b.collide(block.pos, block.width, block.height))
+			{
+				b.taps += 1;
+				block.taps += 1;
+
+				// sem deltaTime, porque colisão não ocorre em todo frame
+				b.vel.x += get_sign(b.vel.x) * b.acc.x;
+				b.vel.y += get_sign(b.vel.y) * b.acc.y;
+
+
+				// colisão à esquerda
+				if (b_right - thickness/2.0f < block.pos.x 
+					&& b.vel.x > 0.0f) {
+					b.vel.x *= -1.0f;
+
+					if (b.taps > min_taps && vBall.size() < max_balls) {
+						b.taps = 0;
+
+						vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
+					}
+				}
+				// colisão à direita
+				else if (b_left + thickness/2.0f > block.pos.x + block.width
+					     && b.vel.x < 0.0f) {
+					b.vel.x *= -1.0f;
+
+					if (b.taps > min_taps && vBall.size() < max_balls) {
+						b.taps = 0;
+
+						vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
+					}
+				}
+
+				// colisão de cima
+				if (b_bottom - thickness / 2.0f < block.pos.y
+					&& b.vel.y > 0.0f) {
+					b.vel.y *= -1.0f;
+
+					if (b.taps > min_taps && vBall.size() < max_balls) {
+						b.taps = 0;
+
+						vBall.push_back(Ball(b.pos.x, b.pos.y, -b.vel.x + var_x, b.vel.y + var_y, thickness, thickness));
+					}
+				}
+				// colisão de baixo
+				else if (b_top + thickness / 2.0f > block.pos.y
+					     && b.vel.y < 0.0f) {
+					b.vel.y *= -1.0f;
+
+					if (b.taps > min_taps && vBall.size() < max_balls) {
+						b.taps = 0;
+
+						vBall.push_back(Ball(b.pos.x, b.pos.y, -b.vel.x + var_x, b.vel.y + var_y, thickness, thickness));
+					}
+				}
+			}
+		}
+
+		// parede da esquerda
+		if (b_left <= thickness
+			&& b.vel.x < 0.0f)
+		{
+			b.vel.x *= -1.0f;
+
+			b.taps += 1;
+			if (b.taps > min_taps && vBall.size() < max_balls) {
+				b.taps = 0;
+
+				vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
+			}
+		}
+		// parede da direita
+		else if (b_right >= SCREEN_WIDTH - thickness
+			&& b.vel.x > 0.0f)
+		{
+			b.vel.x *= -1.0f;
+
+			b.taps += 1;
+			if (b.taps > min_taps && vBall.size() < max_balls) {
+				b.taps = 0;
+
+				vBall.push_back(Ball(b.pos.x, b.pos.y, b.vel.x + var_x, -b.vel.y + var_y, thickness, thickness));
+			}
+		}
+
+		// parede de cima
+		if (b_top <= thickness 
+			&& b.vel.y < 0.0f)
 		{
 			b.vel.y *= -1.0f;
 
-			taps++;
-			if (taps > min_taps && vBall.size() < max_balls) {
+			b.taps++;
+			if (b.taps > min_taps && vBall.size() < max_balls) {
+				b.taps = 0;
+
 				vBall.push_back(Ball(b.pos.x, b.pos.y, -b.vel.x + var_x, b.vel.y + var_y, thickness, thickness));
-				taps = 0;
 			}
 		}
-		// Atualize (negative) a velocidade da bola se ela 
-		// colidir com a parede de baixo
+		// parede de baixo
 		else if (b_bottom >= SCREEN_HEIGHT
 			&& b.vel.y > 0.0f)
 		{
 			b.vel.y *= -1.0f;
 
-			taps++;
-			if (taps > min_taps && vBall.size() < max_balls) {
+			b.taps++;
+			if (b.taps > min_taps && vBall.size() < max_balls) {
+				b.taps = 0;
+
 				vBall.push_back(Ball(b.pos.x, b.pos.y, -b.vel.x + var_x, b.vel.y + var_y, thickness, thickness));
-				taps = 0;
 			}
 		}
 	}
@@ -430,10 +465,10 @@ void Game::GenerateOutput()
 
 	// parede de cima
 	SDL_Rect wall{
-		0,        // top left x
-		0,        // top left y
-		SCREEN_WIDTH,     // width
-		thickness // height
+		0,            // top left x
+		0,            // top left y
+		SCREEN_WIDTH, // width
+		thickness     // height
 	};
 	SDL_RenderFillRect(mRenderer, &wall);
 
@@ -497,8 +532,8 @@ void Game::GenerateOutput()
 		
 		//Revisar posição da Bola
 		SDL_Rect ball{
-			static_cast<int>(b.pos.x - thickness / 2),
-			static_cast<int>(b.pos.y - thickness / 2),
+			static_cast<int>(b.pos.x),
+			static_cast<int>(b.pos.y),
 			thickness,
 			thickness
 		};
@@ -530,8 +565,8 @@ void Game::GenerateOutput()
 
 	SDL_SetRenderDrawColor(mRenderer, 0, 0, 0, 255);
 
-	printf("gols sofridos:");
-	printf(" %3d\n", goals[0]);
+	//printf("gols sofridos:");
+	//printf(" %3d\n", goals[0]);
 
 	DrawText("\n\nGols sofridos: %3d\n", goals[0]);
 
