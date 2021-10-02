@@ -98,27 +98,32 @@ bool Game::Initialize()
 	
 	vBall = std::list<Ball>();
 	vBall.push_back(
-		Ball(SCREEN_WIDTH / 2.0f,
-			SCREEN_HEIGHT / 2.0f,
-			-200.0f,
-			235.0f, thickness, thickness)
+		Ball(SCREEN_WIDTH / 2.0f - thickness / 2.0f,
+			 SCREEN_HEIGHT / 2.0f - thickness / 2.0f,
+			 100.0f,
+			 200.0f, 
+			 thickness, 
+			 thickness)
 	);
 
 	//taps = 0;
 
 	goals = std::vector<int>((size_t)2);
 
-	map = BlockMap(SCREEN_WIDTH / 2.0, SCREEN_HEIGHT, 5, 7);
+	map = BlockMap(SCREEN_WIDTH - 2 * thickness, SCREEN_HEIGHT / 3.0f - thickness, 7, 5);
+
+	float width = map.windowWidth / map.matrixWidth;
+	float height = map.windowHeight / map.matrixHeight;
+	float top = thickness;
+	float left = thickness;
 
 	int i = 0;
 	for (auto row : map.matrix) {
 		for (int j = 0; j < map.matrixWidth; j++) {
 			if (row[j] == 1) {
-				float width = map.windowWidth / map.matrixWidth;
-				float height = map.windowHeight / map.matrixHeight;
-				float x = j * width;
-				float y = i * height;
-				vBlock.push_back(Block(x, y, width, height));
+				float x = left + j * width + thickness / 4.0f;
+				float y = top + i * height + thickness / 4.0f;
+				vBlock.push_back(Block(x, y, width - thickness / 2.0f, height - thickness / 2.0f));
 			}
 		}
 		i++;
@@ -293,7 +298,6 @@ void Game::UpdateGame()
 				b.vel.x += get_sign(b.vel.x) * b.acc.x;
 				b.vel.y += get_sign(b.vel.y) * b.acc.y;
 
-
 				// colisão à esquerda
 				if (b_right - thickness/2.0f < block.pos.x 
 					&& b.vel.x > 0.0f) {
@@ -338,6 +342,10 @@ void Game::UpdateGame()
 
 						vBall.push_back(Ball(b.pos.x, b.pos.y, -b.vel.x + var_x, b.vel.y + var_y, thickness, thickness));
 					}
+				}
+
+				if (block.taps > min_taps) {
+					block.onScreen = false;
 				}
 			}
 		}
@@ -386,28 +394,34 @@ void Game::UpdateGame()
 		else if (b_bottom >= SCREEN_HEIGHT
 			&& b.vel.y > 0.0f)
 		{
-			b.vel.y *= -1.0f;
-
-			b.taps++;
-			if (b.taps > min_taps && vBall.size() < max_balls) {
-				b.taps = 0;
-
-				vBall.push_back(Ball(b.pos.x, b.pos.y, -b.vel.x + var_x, b.vel.y + var_y, thickness, thickness));
-			}
+			b.onScreen = false;
 		}
 	}
 
-	auto iter = vBall.begin();
-	while (iter != vBall.end())
+	auto ball_iter = vBall.begin();
+	while (ball_iter != vBall.end())
 	{
-		if (!iter->onScreen)
+		if (!ball_iter->onScreen)
 		{
-			auto erase = iter;
-			iter++;
+			auto erase = ball_iter;
+			ball_iter++;
 
 			vBall.erase(erase);
 		}
-		else iter++;
+		else ball_iter++;
+	}
+
+	auto block_iter = vBlock.begin();
+	while (block_iter != vBlock.end())
+	{
+		if (!block_iter->onScreen)
+		{
+			auto erase = block_iter;
+			block_iter++;
+
+			vBlock.erase(erase);
+		}
+		else block_iter++;
 	}
 	
 	if (vBall.size() == 0) mIsRunning = false;
@@ -568,7 +582,7 @@ void Game::GenerateOutput()
 	//printf("gols sofridos:");
 	//printf(" %3d\n", goals[0]);
 
-	DrawText("\n\nGols sofridos: %3d\n", goals[0]);
+	//DrawText("\n\nGols sofridos: %3d\n", goals[0]);
 
 	SDL_SetRenderDrawColor(mRenderer, 255, 0, 0, 255);
 	

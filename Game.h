@@ -93,26 +93,29 @@ class BlockMap {
 
 public:
 	std::vector<std::vector<int>> matrix;
-	float windowHeight;
 	float windowWidth;
-	float matrixHeight;
+	float windowHeight;
+
 	float matrixWidth;
-	BlockMap(): windowHeight(0), windowWidth(0), matrixHeight(0), matrixWidth(0) 
+	float matrixHeight;
+	BlockMap(): windowWidth(0), windowHeight(0), matrixWidth(0), matrixHeight(0)
 	{
 	
 	}
-	BlockMap(float w_height, float w_width, int m_height, int m_width)
-		: windowHeight(w_height), windowWidth(w_width), matrixHeight(m_height), matrixWidth(m_width) 
+	BlockMap(float w_width, float w_height, int m_width, int m_height)
+		: windowWidth(w_width), windowHeight(w_height), matrixWidth(m_width), matrixHeight(m_height)
 	{
 		matrix.resize(m_height);
-		matrix[0].resize(m_width, 0);
-		matrix[1] = { 0,1,1,0,1,1,0 };
-		matrix[2].resize(m_width, 0);
-		matrix[3] = { 0,0,1,1,1,0,0 };
-		matrix[4].resize(m_width, 0);
-		/*for (auto& row : matrix) {
-			row.resize(m_width);
-		}*/
+
+		for (auto& row : matrix) {
+			row.resize(m_width, 1);
+		}
+
+		//matrix[0].resize(m_width, 0);
+		//matrix[1] = { 0,1,1,0,1,1,0 };
+		//matrix[2].resize(m_width, 0);
+		//matrix[3] = { 0,0,1,1,1,0,0 };
+		//matrix[4].resize(m_width, 0);
 	}
 
 	void Initialize(){
