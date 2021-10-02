@@ -482,8 +482,14 @@ void Game::GenerateOutput()
 	// usando mBallPos que � uma struct de coordenadas 
 	// definida como membro em Game.h
 	
-	//mudar a cor do renderizador para a bola
-	SDL_SetRenderDrawColor(mRenderer, 255, 255, 0, 255);
+	//mudar a cor do renderizador para as bolinhas
+	SDL_SetRenderDrawColor(
+		mRenderer,
+		255, // R
+		0,   // G
+		0,   // B
+		255  // A
+	);
 
 	for (Ball& b : vBall)
 	{
@@ -499,6 +505,15 @@ void Game::GenerateOutput()
 
 		SDL_RenderFillRect(mRenderer, &ball);
 	}
+
+	//mudar a cor do renderizador para os blocos
+	SDL_SetRenderDrawColor(
+		mRenderer,
+		255, // R
+		255, // G
+		0,   // B
+		255  // A
+	);
 
 	for (Block const &block : vBlock) {
 		if (block.onScreen == true) {
